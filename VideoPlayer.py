@@ -42,6 +42,8 @@ class App:
         self.canvas = canvas.TKCanvas
 
         # Start video display thread
+        self.load_video()
+        
         while True:  # Main event Loop
             event, values = self.window.Read()
 
@@ -81,7 +83,6 @@ class App:
                     # Reset frame count
                     self.frame = 0
                     self.delay = 1 / self.vid.fps
-                    self.load_video()
 
                     # Update the video path text field
                     self.window.Element("_FILEPATH_").Update(video_path)
