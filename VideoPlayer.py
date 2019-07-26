@@ -16,12 +16,13 @@ class App:
 
         # ------ App states ------ #
         self.play = True  # Is the video currently playing?
-        self.delay = 23  # Delay between frames - not sure what it should be, not accurate playback
+        self.delay = 0.023  # Delay between frames - not sure what it should be, not accurate playback
         self.frame = 1  # Current frame
         self.frames = None  # Number of frames
         # ------ Other vars ------ #
         self.vid = None
         self.photo = None
+        self.next = "1"
         # ------ Menu Definition ------ #
         menu_def = [['&File', ['&Open', '&Save', '---', 'Properties', 'E&xit']],
                     ['&Edit', ['Paste', ['Special', 'Normal', ], 'Undo'], ],
@@ -41,8 +42,6 @@ class App:
         self.canvas = canvas.TKCanvas
 
         # Start video display thread
-        self.load_video()
-
         while True:  # Main event Loop
             event, values = self.window.Read()
 
@@ -81,6 +80,9 @@ class App:
 
                     # Reset frame count
                     self.frame = 0
+                    self.delay = 1 / self.vid.fps
+                    self.load_video()
+
                     # Update the video path text field
                     self.window.Element("_FILEPATH_").Update(video_path)
 
@@ -116,6 +118,7 @@ class App:
 
     def update(self):
         """Update the canvas element with the next video frame recursively"""
+        start_time = time.time()
         if self.vid:
             if self.play:
 
@@ -131,10 +134,12 @@ class App:
                     self.frame += 1
                     self.update_counter(self.frame)
 
-                    # print("FPS: ", 1.0 / (time.time() - self.start_time))
-        # self.start_time = time.time()  # start time of the loop
-        # The tkinter .after method lets us recurse after a delay without reaching recursion limit
-        self.canvas.after(self.delay, self.update)
+            # Uncomment these to be able to manually count fps
+            # print(str(self.next) + " It's " + str(time.ctime()))
+            # self.next = int(self.next) + 1
+        # The tkinter .after method lets us recurse after a delay without reaching recursion limit. We need to wait
+        # between each frame to achieve proper fps, but also count the time it took to generate the previous frame.
+        self.canvas.after(abs(int((self.delay - (time.time() - start_time)) * 1000)), self.update)
 
     def set_frame(self, frame_no):
         """Jump to a specific frame"""
